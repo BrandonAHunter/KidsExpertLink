@@ -33,6 +33,7 @@ export class SignupPage {
       user.set("username", this.username);
       user.set("password", this.password);
       user.set("email", this.email);
+      user.set("contactEmail", this.email);
       user.set("firstName", this.firstName);
       user.set("lastName", this.lastName);
       user.set("phone", this.phone);

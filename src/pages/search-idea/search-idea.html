@@ -7,12 +7,16 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>searchIdea</ion-title>
+    <ion-title>Search Ideas</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
-
+	<ion-list>
+      <ion-item *ngFor="let idea of IdeaList" (click)="viewIdeaDetail(idea)">
+        {{idea.Title}}
+      </ion-item>
+  	</ion-list>
 </ion-content>

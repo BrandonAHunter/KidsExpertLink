@@ -7,12 +7,27 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>createIdea</ion-title>
+    <ion-title>Create Idea</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+	<form (submit)="CreateDescription()">
+    	<ion-list padding inset scroll="false">
+      		<ion-item>
+        		<ion-label stacked>Title</ion-label>
+        		<ion-input type="text" [(ngModel)]="Title" name="title"></ion-input>
+      		</ion-item>
+      		<ion-item>
+        		<ion-label stacked>Description</ion-label>
+        		<ion-input type="text" [(ngModel)]="Description" name="description"></ion-input>s
+      		</ion-item>
 
+          <div padding>
+            <button ion-button color="accent">Create</button>
+          </div>
+  		</ion-list>
+	</form>
 </ion-content>

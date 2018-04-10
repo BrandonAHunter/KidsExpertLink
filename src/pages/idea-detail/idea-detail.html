@@ -7,12 +7,29 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>ideaDetail</ion-title>
+    <ion-buttons start>
+      <button ion-button icon-only (click)="close()"><ion-icon name="arrow-back"> Back</ion-icon></button>
+    </ion-buttons>
+    <ion-title>{{Title}}</ion-title>
+    <ion-buttons end>
+      	<button ion-button icon-only (click)="Link()" id="linkButton">Link Idea</button>
+    </ion-buttons>
   </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+  	<div>
+	  {{Description}}
+  	</div>
+
+    <div>
+	   <ion-label>Contact</ion-label>
+	   <ion-label>Name:  {{Name}}</ion-label>
+	   <ion-label>Email: {{Email}}</ion-label>
+	   <ion-label>Phone: {{Phone}}</ion-label>
+    </div>
+
 
 </ion-content>

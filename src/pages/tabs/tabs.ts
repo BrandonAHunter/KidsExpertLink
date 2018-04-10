@@ -13,10 +13,10 @@ import { ViewLinkedPage } from '../view-linked/view-linked';
   templateUrl: 'tabs.html'
 })
 export class TabsPage {
-  title1 = 'Create Idea';
-  tab1Root = CreateIdeaPage;
-  title2 = 'View Ideas';
-  tab2Root = ViewIdeaPage;
+  title1;
+  tab1Root;
+  title2;
+  tab2Root;
   tab3Root = ProfilePage;
 
   constructor() {
@@ -28,6 +28,11 @@ export class TabsPage {
   		this.tab1Root = SearchIdeaPage;
   		this.title2 = 'Linked Idea'
   		this.tab2Root = ViewLinkedPage;
-  	}
+  	} else {
+      this.title1 = 'Create Idea'
+      this.tab1Root = CreateIdeaPage;
+      this.title2 = 'My Ideas'
+      this.tab2Root = ViewIdeaPage;
+    }
   }
 }
