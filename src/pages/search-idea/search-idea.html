@@ -13,10 +13,28 @@
 </ion-header>
 
 
-<ion-content padding>
+<ion-content>
+
+  <ion-searchbar
+      [(ngModel)]="searchInput"
+      [showCancelButton]="shouldShowCancel"
+      (ionInput)="onSearchInput($event)"
+      (ionCancel)="onSearchCancel($event)">
+  </ion-searchbar>
+
 	<ion-list>
-      <ion-item *ngFor="let idea of IdeaList" (click)="viewIdeaDetail(idea)">
-        {{idea.Title}}
+      <ion-item class="search-item" *ngFor="let idea of IdeasList" (click)="viewIdeaDetail(idea)">
+        <div>
+            <strong>{{idea.Title}}</strong>
+            <br>
+            {{idea.Name}}
+            <br>
+            <br>
+            <p>
+                {{idea.Description}}
+            </p>
+        </div>
       </ion-item>
   	</ion-list>
+
 </ion-content>

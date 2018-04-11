@@ -18,34 +18,32 @@ import { Data } from '../../providers/data';
   selector: 'page-view-idea',
   templateUrl: 'view-idea.html',
 })
-export class ViewIdeaPage {
-  static ideas = [];
+export class ViewIdeaPage 
+{
+    constructor(public navCtrl: NavController, public modalCtrl: ModalController, 
+                public data: Data) 
+    {
 
-  constructor(public navCtrl: NavController, public modalCtrl: ModalController, public dataService: Data) {
-  	
-  }
+    }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ViewIdeaPage');
-  }
+    ionViewDidLoad() 
+    {
+        console.log('ionViewDidLoad ViewIdeaPage');
+    }
 
-  getIdeas(){
-    return ViewIdeaPage.ideas;
-  }
+    getIdeas()
+    {
+        return this.data.LinkedItemsList;
+    }
 
-  viewIdeaDetail(idea) {
-
-    let addModal = this.modalCtrl.create(IdeaDetailPage, {idea: idea});
-
-    addModal.onDidDismiss((Linked) => {
-
-      if (Linked) {
-        //TODO: Add Linked Info To Linked database table
-      }
-
-    });
-
-    addModal.present();
-
-  }
+    viewIdeaDetail(idea) 
+    {
+        if (idea != undefined)
+        {
+            this.navCtrl.push(IdeaDetailPage, 
+            {
+                item: idea
+            });
+        }
+    }
 }

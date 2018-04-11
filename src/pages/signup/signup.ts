@@ -1,63 +1,139 @@
+
 import { Component } from '@angular/core';
 import { NavController, LoadingController } from 'ionic-angular';
 import { Parse } from 'parse';
+import { AlertController } from 'ionic-angular';
 
-// Providers
-// import { AuthProvider } from '../../providers/auth/auth';
-
-// Pages
 import { TabsPage } from '../tabs/tabs';
 
 @Component({
   selector: 'page-signup',
   templateUrl: 'signup.html'
 })
-export class SignupPage {
-  password: string = '';
-  username: string = '';
-  firstName;
-  lastName;
-  phone;
-  email: string = '';
-  TypeOfUser;
+export class SignupPage 
+{
+    private TypeOfUser: string = '';
 
-  constructor(public navCtrl: NavController, private loadCtrl: LoadingController) { }
+    private password: string = '';
+    private username: string = '';
+    private verify: string = '';
+    
+    private firstName: string = '';
+    private lastName: string = '';
 
-  ionViewDidLoad() {
-    console.log('Initiate Signup');
-  }
+    private phone: string = '';
+    private email: string = '';
+    
+    private userNameUsed: boolean = false;
+    private emailUsed: boolean = false;
 
-  public doRegister() {
+    constructor(public navCtrl: NavController, private loadCtrl: LoadingController,
+                private alertCtrl: AlertController)
+    {
 
-    var user = new Parse.User();
-      user.set("username", this.username);
-      user.set("password", this.password);
-      user.set("email", this.email);
-      user.set("contactEmail", this.email);
-      user.set("firstName", this.firstName);
-      user.set("lastName", this.lastName);
-      user.set("phone", this.phone);
-      user.set("TypeOfUser", this.TypeOfUser);
+    }
 
+    ionViewDidLoad() 
+    {
+        console.log('Initiate Signup');
+    }
 
-      // other fields can be set just like with Parse.Object
-      // user.set("phone", "888-888-888");
-      var self=this;
-      user.signUp(null, {
-        success: function(user) {
-          // Hooray! Let them use the app now.
-          console.log("signup success"+user.get("username"));
-          self.navCtrl.pop();
-        },
-        error: function(user, error) {
-          // Show the error message somewhere and let the user try again.
-          alert("Error: " + error.code + " " + error.message);
-        }
-      });
+    public doRegister() 
+    {
+        this.userNameUsed = false;
+        this.emailUsed = false;
 
+        let self = this;
+        const UserParse = Parse.Object.extend('User');
 
-    console.log("sign up");
+        let userNameCheckQuery = new Parse.Query(UserParse);
+        userNameCheckQuery.equalTo("username", self.username);
+        userNameCheckQuery.first({
+            success: function (entry) 
+            {
+                if (entry)
+                {
+                    self.userNameUsed = true;
+                }
+            },
+            error: function (error) 
+            {
+                
+            }
+        }).then(function(obj) 
+        {
+            let emailCheckQuery = new Parse.Query(UserParse);
+            emailCheckQuery.equalTo("email", self.email);
+            emailCheckQuery.first({
+                success: function (entry) 
+                {
+                    if (entry)
+                    {
+                        self.emailUsed = true;
+                    }
+                },
+                error: function (error) 
+                {
+                    
+                }
+            }).then(function(obj) 
+            {
+                if (self.userNameUsed)
+                {
+                    self.presentAlert("username " + self.username + " is already used");
+                }
+                else if (self.emailUsed)
+                {
+                    self.presentAlert("email " + self.email + " is already used");
+                }
+                else if (self.password != self.verify)
+                {
+                    self.presentAlert("Passwords do not match");
+                }
+                else if (self.TypeOfUser != "Student" && self.TypeOfUser != "Professional")
+                {
+                    self.presentAlert("User type must be specificed");
+                }
+                else
+                {
+                    var user = new Parse.User();
+                    user.set("username", self.username);
+                    user.set("password", self.password);
+                    user.set("email", self.email);
+                    user.set("contactEmail", self.email);
+                    user.set("firstName", self.firstName);
+                    user.set("lastName", self.lastName);
+                    user.set("phone", self.phone);
+                    user.set("TypeOfUser", self.TypeOfUser);
 
-  }
+                    user.signUp(null, {
+                        success: function(user) 
+                        {
+                            console.log("signup success");
+                            self.navCtrl.pop();
+                        },
+                        error: function(user, error) 
+                        {
+                            console.log("Error: " + error.code + " " + error.message);
+                            self.presentAlert(error.message);
+                        }
+                    });
 
+                    console.log("sign up complete");
+                }
+            });
+        });
+    }
+
+    private presentAlert(text: string) 
+    {
+        console.log(text);
+        let alert = this.alertCtrl.create(
+        {
+            title: 'Alert',
+            subTitle: text,
+            buttons: ['Ok']
+        });
+        alert.present();
+    }
 }

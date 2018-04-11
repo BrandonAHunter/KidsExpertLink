@@ -13,7 +13,7 @@
 </ion-header>
 
 
-<ion-content padding>
+<ion-content>
 	<form (submit)="CreateDescription()">
     	<ion-list padding inset scroll="false">
       		<ion-item>
@@ -24,7 +24,7 @@
         		<ion-label stacked>Description</ion-label>
         		<ion-input type="text" [(ngModel)]="Description" name="description"></ion-input>s
       		</ion-item>
-
+          
           <div padding>
             <button ion-button color="accent">Create</button>
           </div>

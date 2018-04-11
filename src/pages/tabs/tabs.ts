@@ -12,27 +12,33 @@ import { ViewLinkedPage } from '../view-linked/view-linked';
 @Component({
   templateUrl: 'tabs.html'
 })
-export class TabsPage {
-  title1;
-  tab1Root;
-  title2;
-  tab2Root;
-  tab3Root = ProfilePage;
+export class TabsPage 
+{
+    title1;
+    tab1Root;
+    title2;
+    tab2Root;
+    tab3Root = ProfilePage;
 
-  constructor() {
-  	var currentUser = Parse.User.current();
-  	var type = currentUser.get('TypeOfUser');
-  	console.log(type);
-  	if(type == 'Professional'){
-  		this.title1 = 'Search Idea'
-  		this.tab1Root = SearchIdeaPage;
-  		this.title2 = 'Linked Idea'
-  		this.tab2Root = ViewLinkedPage;
-  	} else {
-      this.title1 = 'Create Idea'
-      this.tab1Root = CreateIdeaPage;
-      this.title2 = 'My Ideas'
-      this.tab2Root = ViewIdeaPage;
+    constructor() 
+    {
+        var currentUser = Parse.User.current();
+        var type = currentUser.get('TypeOfUser');
+        console.log(type);
+
+        if (type == 'Professional')
+        {
+          this.title1 = 'Search Idea'
+          this.tab1Root = SearchIdeaPage;
+          this.title2 = 'Linked Ideas'
+          this.tab2Root = ViewLinkedPage;
+        } 
+        else 
+        {
+          this.title1 = 'Create Idea'
+          this.tab1Root = CreateIdeaPage;
+          this.title2 = 'My Ideas'
+          this.tab2Root = ViewIdeaPage;
+        }
     }
-  }
 }

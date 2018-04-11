@@ -4,130 +4,238 @@ import { Parse } from 'parse';
 
  
 @Injectable()
-export class Data {
-private parseAppId: string = 'aMYiAbhppqfmAdA4KyQTyi63DwNBc8TRoSOOLiFa';
-private parseJSKey: string='CJmgf6uKtU0m1lZfAudSwT2UQGwIe9sNL3iRyqqL'
-private parseServerUrl: string = 'https://parseapi.back4app.com/';
+export class Data 
+{
+    private parseAppId: string = 'aMYiAbhppqfmAdA4KyQTyi63DwNBc8TRoSOOLiFa';
+    private parseJSKey: string='CJmgf6uKtU0m1lZfAudSwT2UQGwIe9sNL3iRyqqL'
+    private parseServerUrl: string = 'https://parseapi.back4app.com/';
 
+    private Ideas;
+
+    private UserList = [];
+    private IdeaList = [];
+
+    private LinkIdeaIdList = [];
+
+    private currentUserId: string = "";
+    private typeOfUser: string = "";
 	
-  constructor(public Storage: Storage){
+    constructor(public Storage: Storage){
  
-    Parse.initialize(this.parseAppId, this.parseJSKey);
-    Parse.serverURL = this.parseServerUrl;
+        Parse.initialize(this.parseAppId, this.parseJSKey);
+        Parse.serverURL = this.parseServerUrl;
 
-    console.log('Initiated Parse');
+        console.log('Initiated Parse');
 
-    /*const Menu = Parse.Object.extend('Menu');
-    let query = new Parse.Query(Menu);
-    query.limit(1000);
-    query.find().then((menus) => {
-      // resolve(menus);
-      console.log(menus.length)
-    }, (error) => {
-      //reject(error);
-    });*/
-  }
- 
-/* setMenuItem(itemName, price, description, category, url, quantity){
+        //Do not load storage until the user logs in
+    }
+    
+    public load()
+    {
+        this.currentUserId = Parse.User.current().id;
 
-//   	let item={
-//   	itemName : itemName,
-// 	price: price,
-//     description: description,
-//     category: category,
-//     url: url,
-//     quantity: quantity= 1,
-// };
+        this.Ideas = Parse.Object.extend('Idea');
+        var ideaQuery = new Parse.Query(this.Ideas);
 
-	// this.saveMenuItem(item);
-  
-  }
+        var self = this;
 
+        var Users = Parse.Object.extend('User');
+        var userQuery = new Parse.Query(Users);
+        userQuery.find({
+            success: function(users) 
+            {
+                for (var i = 0; i < users.length; i++) 
+                {
+                    let User = {
+                        id: users[i].id,
+                        Name: users[i].get("firstName") + " " + users[i].get("lastName"),
+                        Email: users[i].get("contactEmail"),
+                        Phone: users[i].get("phone")
+                    };
+                    self.UserList.push(User);
 
-  getDataMenu() {
-    //return this.Storage.get('items');
-    // return this.items;
-    const Menu = Parse.Object.extend('Menu');
-    let query = new Parse.Query(Menu);
-    query.limit(1000);
-    var items=[];
-    query.find().then((menus) => {
-      // resolve(menus);
-      console.log(menus.length);
-      
-      for (var i = menus.length - 1; i >= 0; i--) {
-         var mymenu = {
-           itemName:menus[i].get("name"),
-           price:menus[i].get("price"),
-           category:menus[i].get("category"),
-           url:menus[i].get("imageurl")
-         }
-         items.push(mymenu);
-      }
-      console.log(items.length);
-      return items;
+                    if (users[i].id == self.currentUserId)
+                    {
+                        self.typeOfUser = users[i].get("TypeOfUser");
+                    }
+                }
+            },
+            error: function(error) 
+            {
+                console.log("Error: " + error.code + " " + error.message);
+            }
+        }).then(function(obj) 
+        {
+            var LinkItem = Parse.Object.extend('Linked');
+            var linkQuery = new Parse.Query(LinkItem);
+            linkQuery.find({
+                success: function(links) 
+                {
+                    for (var i = 0; i < links.length; i++)
+                    {
+                        if (self.currentUserId == links[i].get("expert"))
+                        {
+                            self.LinkIdeaIdList.push(links[i].get("ideaId"));
+                        }
+                    }
+                },
+                error: function(error) { }
+            }).then(function()
+            {
+                ideaQuery.find({
+                    success: function(results) 
+                    {
+                        // Do something with the returned Parse.Object values
+                        console.log(results.length);
+                        for (var i = 0; i < results.length; i++) 
+                        {
+                            if (results[i] != undefined)
+                            {
+                                let id = results[i].id;
+                                let title = results[i].get("Title");
+                                let description = results[i].get("Description");
+                                let creator = results[i].get("CreatedBy");
 
-    }, (error) => {
-      // reject(error);
-      console.log("error");
-    });
+                                for (var j = 0; j < self.UserList.length; j++)
+                                {
+                                    let user = self.UserList[j];
+                                    if (user != undefined && user.id == creator)
+                                    {
+                                        let newItem = {
+                                            IdeaId: id,
+                                            Title: title,
+                                            Description: description,
+                                            Creator: creator,
+                                            Name: user.Name,
+                                            Email: user.Email,
+                                            Phone: user.Phone
+                                        };
+                                        
+                                        if (self.typeOfUser == "Student")
+                                        {
+                                            self.LinkIdeaIdList.push(id);
+                                        }
+                                        
+                                        self.IdeaList.push(newItem);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (self.IdeaList.length > 1)
+                        {
+                            self.IdeaList.sort(function(itemA, itemB)
+                            {
+                                if(itemA.Title < itemB.Title) 
+                                {
+                                    return -1;
+                                }
+                                if(itemA.Title > itemB.Title) 
+                                {
+                                    return 1
+                                }
+                                return 0;
+                            });
+                        }
+                    }, error: function(error) 
+                    {
+                        alert("Error: " + error.code + " " + error.message);
+                    }
+                });
+            });
+        });
+    }
 
-    return items;
+    public get IdeaItemsList(): any[]
+    {
+        return this.IdeaList;
+    }
 
-  }
- 
-  saveMenuItem(item){
-  	// this.items.push(item);
-   //  let newData = JSON.stringify(item);
-   //  this.Storage.set('items', newData);
-  }
+    public get LinkedItemsList(): any[]
+    {
+        let links = [];
+        for (var i = 0; i < this.IdeaList.length; i++)
+        {
+            if (this.LinkIdeaIdList.indexOf(this.IdeaList[i].IdeaId) != -1)
+            {
+                links.push(this.IdeaList[i]);
+            }
+        }
+        return links;
+    }
 
-setOrderItem(itemName, price, description, category, url, quantity, myDate){
+    public get UsersList(): any[]
+    {
+        return this.UserList;
+    }
 
-    let order={
-    itemName : itemName,
-      price: price,
-    description: description,
-    category: category,
-    url: url,
-    quantity: quantity,
-    myDate: myDate, 
-};
+    public getUserById(userId: string): any
+    {    
+        for (var i = 0; i < this.UserList.length; i++)
+        {
+            if (this.UserList[i].id == userId)
+            {
+                return this.UserList[i];
+            }
+        }
+        return undefined;
+    }
 
-  this.saveOrderItem(order);
-  
-  }
+    public getIsLinkedToIdea(ideaId: string)
+    {
+        return this.LinkIdeaIdList.indexOf(ideaId) != -1
+    }
 
+    public toggleLink(ideaId: string, expertId: string, studentId: string)
+    {
+        let self = this;
+        var linkExists = false;
 
-  getDataOrder() {
-    //return this.Storage.get('items');
-    // return this.orders;
-  }
- 
-  saveOrderItem(order){
-    // this.orders.push(order);
-    // let newData = JSON.stringify(order);
-    // this.Storage.set('orders', newData);
+        var LinkItem = Parse.Object.extend('Linked');
+        var linkQuery = new Parse.Query(LinkItem);
+        linkQuery.equalTo("ideaId", ideaId);
+        linkQuery.first({
+            success: function(result) 
+            {
+                if (result)
+                {
+                    //Remove the link between the expert and the student
+                    result.destroy({
+                        success: function(response) 
+                        {
+                            self.LinkIdeaIdList.splice(self.LinkIdeaIdList.indexOf(ideaId), 1);
+                            console.log('item erased successfully');
+                        },
+                        error: function(response, error) {
+                            console.log('Error: '+ error.message);
+                        }
+                    });
 
-    var Order = Parse.Object.extend("Menu");
-var menu = new Menu();
-
-menu.set("name", this.itemName);
-menu.set("price", parseFloat(this.price));
-menu.set("category", this.category);
-menu.set("imageurl",this.url);
-
-menu.save(null, {
-  success: function(menu) {
-    // Execute any logic that should take place after the object is saved.
-    alert('New object created with objectId: ' + menu.id);
-  },
-  error: function(menu, error) {
-    // Execute any logic that should take place if the save fails.
-    // error is a Parse.Error with an error code and message.
-    alert('Failed to create new object, with error code: ' + error.message);
-  }
-});
-  }
-  */
+                    linkExists = true;
+                }
+            },
+            error: function(error) { }
+        }).then(function()
+        {
+            //Create the link between the expert and the student
+            if (!linkExists)
+            {
+                let newLinkItem = new LinkItem();
+                newLinkItem.set("expert", expertId);
+                newLinkItem.set("student", studentId);
+                newLinkItem.set("ideaId", ideaId);
+                newLinkItem.save(null, {
+                    success: function (entry) 
+                    {
+                        self.LinkIdeaIdList.push(ideaId);
+                    },
+                    error: function (response, error) 
+                    {
+                        console.log('Error: ' + error.message);
+                    }
+                });
+            }
+        });
+    }
 }
