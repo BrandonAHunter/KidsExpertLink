@@ -32,6 +32,10 @@ export class Data
     
     public load()
     {
+        this.UserList = [];
+        this.IdeaList = [];
+        this.LinkIdeaIdList = [];
+
         this.currentUserId = Parse.User.current().id;
 
         this.Ideas = Parse.Object.extend('Idea');
@@ -111,7 +115,7 @@ export class Data
                                             Phone: user.Phone
                                         };
                                         
-                                        if (self.typeOfUser == "Student")
+                                        if (self.typeOfUser == "Student" && creator == self.currentUserId)
                                         {
                                             self.LinkIdeaIdList.push(id);
                                         }
@@ -237,5 +241,163 @@ export class Data
                 });
             }
         });
+    }
+
+    public addIdea(creatorId: string, title: string, description: string)
+    {
+        var self = this;
+
+        var Idea = new this.Ideas();
+        Idea.set('CreatedBy', creatorId);
+        Idea.set('Title', title);
+        Idea.set('Description', description);
+        Idea.save(null, 
+        {
+            success: function(idea) 
+            {
+                console.log("idea added");
+                var user = Parse.User.current();
+                user.fetch().then(function(fetchedUser)
+                {
+                    let newItem = {
+                        IdeaId: idea.id,
+                        Title: title,
+                        Description: description,
+                        Creator: creatorId,
+                        Name: fetchedUser.get("firstName") + " " + fetchedUser.get("lastName"),
+                        Email: fetchedUser.get("contactEmail"),
+                        Phone: fetchedUser.get("phone")
+                    };
+                    
+                    if (self.typeOfUser == "Student")
+                    {
+                        self.LinkIdeaIdList.push(idea.id);
+                    }
+                    self.IdeaList.push(newItem);
+                }, 
+                function(error)
+                {
+                    //Handle the error
+                });
+            },
+            error: function(menu, error) 
+            {
+                console.log('Failed to create new idea, with error code: ' + error.message);
+            }
+        });
+    }
+
+    public editIdea(ideaId: string, creatorId: string, title: string, description: string)
+    {
+        for (var i = 0; i < this.IdeaList.length; i++)
+        {    
+            let idea = this.IdeaList[i];
+            if (idea.IdeaId == ideaId)
+            {
+                idea.Title = title;
+                idea.Description = description;
+                break;
+            }
+        }
+
+        let query = new Parse.Query(this.Ideas);
+        query.equalTo("objectId", ideaId);
+        query.first({
+            success: function (entry) 
+            {
+                if (entry) 
+                {
+                    entry.set("Title", title);
+                    entry.set("Description", description);
+                    entry.save(null, {
+                        success: function (item) 
+                        {
+                            console.log('idea updated successfully');
+                        },
+                        error: function (response, error) 
+                        {
+                            console.log('Error: ' + error.message);
+                        }
+                    });
+                }
+            },
+            error: function (error) 
+            {
+                console.log("Error: " + error.code + " " + error.message);
+            }
+        });
+    }
+
+    public removeIdea(ideaId: string)
+    {   
+        let ideaIndex = -1;
+        for (let i = 0; i < this.IdeaList.length; i++)
+        {
+            if (this.IdeaList[i].IdeaId == ideaId)
+            {
+                ideaIndex = i;
+                break;
+            }
+        }
+
+        if (ideaIndex != -1)
+        {
+            this.IdeaList.splice(ideaIndex, 1);
+        }
+        
+        let query = new Parse.Query(this.Ideas);
+        query.equalTo("objectId", ideaId);
+        query.first({
+            success: function (entry) 
+            {
+                if (entry) 
+                {
+                    entry.destroy({
+                        success: function(response) 
+                        {
+                            console.log('removed idea succesfully');
+                        },
+                        error: function(response, error) 
+                        {
+                            console.log('Error: '+ error.message);
+                        }
+                    });
+                }
+            },
+            error: function (error) 
+            {
+                console.log("Error: " + error.code + " " + error.message);
+            }
+        });
+    }
+
+    //verify that the email is valid before calling this method
+    //Update the Idea List in memory. This does not affect the database
+    public updateUser(firstName: string, lastName: string, email: string, phone: string)
+    {
+        for (var i = 0; i < this.UserList.length; i++)
+        {
+            let user = this.UserList[i];
+            if (user.id)
+            {
+                user.Name = firstName + " " + lastName;
+                user.Email = email;
+                user.Phone = phone;
+
+                for (var j = 0; j < this.IdeaList.length; j++)
+                {
+                    let idea = this.IdeaList[j];
+                    if (idea.Creator == user.id)
+                    {
+                        idea.Name = user.Name;
+                        idea.Email = user.Email;
+                        idea.Phone = user.Phone;
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
     }
 }

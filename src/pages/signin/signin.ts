@@ -56,8 +56,7 @@ export class SigninPage
         console.log(text);
         let alert = this.alertCtrl.create(
         {
-            title: 'Alert',
-            subTitle: text,
+            title: text,
             buttons: ['Ok']
         });
         alert.present();

@@ -38,7 +38,8 @@ export class IdeaDetailPage
     ionViewDidLoad() 
     {
         let button = document.getElementById("linkButton");
-        button.innerHTML = "Link Idea";
+        button.innerHTML = "Link";
+        button.style.color = "#4286f4";
 
         this.item = this.navParams.get('item');
 
@@ -49,6 +50,9 @@ export class IdeaDetailPage
         {
             let button = document.getElementById("linkButton");
             button.style.display = "none";
+
+            let contactSection = document.getElementById("contactSection");
+            contactSection.style.display = "none";
         }
 
         this.Title = this.item.Title;
@@ -66,7 +70,7 @@ export class IdeaDetailPage
             if (linkedItems[i].IdeaId == this.item.IdeaId)
             {
                 button.style.color = "#f00";
-                button.innerHTML = "Unlink Idea";
+                button.innerHTML = "Unlink";
                 break;
             }
         }
@@ -79,14 +83,14 @@ export class IdeaDetailPage
         if (button.innerHTML == "Link Idea")
         {
             button.style.color = "#f00";
-            button.innerHTML = "Unlink Idea";
+            button.innerHTML = "Unlink";
         }
         else
         {
             button.style.color = "#4286f4";
-            button.innerHTML = "Link Idea";
+            button.innerHTML = "Link";
         }
-
+        
         this.data.toggleLink(this.item.IdeaId, Parse.User.current().id, this.item.Creator);
     }
     
@@ -95,8 +99,7 @@ export class IdeaDetailPage
         console.log(text);
         let alert = this.alertCtrl.create(
         {
-            title: 'Alert',
-            subTitle: text,
+            title: text,
             buttons: ['Ok']
         });
         alert.present();

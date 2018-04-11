@@ -15,10 +15,41 @@
 
 <ion-content padding>
 
-    <div>
-       <ion-label>Name: {{firstName}} {{lastName}}</ion-label>
-       <ion-label>Email: {{email}}</ion-label>
-       <ion-label>Phone: {{phone}}</ion-label>
-    </div>
+    <form (submit)="updateProfile()">
+      <ion-list inset scroll="false">
+
+          <ion-item>
+            <ion-label stacked>First Name</ion-label>
+            <ion-input type="text" [(ngModel)]="firstName" name="first" (keypress)="onKeyPress($event)"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label stacked>Last Name</ion-label>
+            <ion-input type="text" [(ngModel)]="lastName" name="last" (keypress)="onKeyPress($event)"></ion-input>
+          </ion-item>
+          
+          <ion-item>
+            <ion-label stacked>Email Address</ion-label>
+            <ion-input type="text" [(ngModel)]="email" name="address" (keypress)="onKeyPress($event)"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label stacked>Phone Number</ion-label>
+            <ion-input type="number" [(ngModel)]="phone" name="phoneContact" (keypress)="onKeyPressPhone($event)"></ion-input>
+          </ion-item>
+          
+          <div padding>
+            <button ion-button color="accent"
+              block [disabled]="
+                  firstName.length == '0' || 
+                  lastName.length == '0' || 
+                  phone.length == '0' || 
+                  email.length == '0'
+                ">
+              Update Profile
+            </button>
+          </div>
+      </ion-list>
+  </form>
 
 </ion-content>

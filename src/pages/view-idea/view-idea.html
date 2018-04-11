@@ -12,16 +12,22 @@
 
 </ion-header>
 
-
-<ion-content padding>
+<ion-content>
   	<ion-list>
   	  <ion-item-sliding *ngFor="let idea of getIdeas()">
-        <ion-item (click)="viewIdeaDetail(idea)">
-     	  {{idea.Title}}
+        <ion-item class="linked-item" (click)="viewIdeaDetail(idea)">
+       	  <div>
+              <strong>{{idea.Title}}</strong>
+              <br>
+              <br>
+              <p>
+                  {{idea.Description}}
+              </p>
+          </div>
         </ion-item>
         <ion-item-options side="left">
-        	<button ion-button>Edit</button>
-        	<button ion-button color="danger">Delete</button>
+        	<button ion-button (click)="editIdea(idea)">Edit</button>
+        	<button ion-button color="danger" (click)="askToDeleteIdea(idea)">Delete</button>
       	</ion-item-options>
       </ion-item-sliding>
   	</ion-list>

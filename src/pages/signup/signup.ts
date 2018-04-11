@@ -12,7 +12,7 @@ import { TabsPage } from '../tabs/tabs';
 })
 export class SignupPage 
 {
-    private TypeOfUser: string = '';
+    private TypeOfUser: string = "Student";
 
     private password: string = '';
     private username: string = '';
@@ -124,14 +124,39 @@ export class SignupPage
             });
         });
     }
+    
+    onKeyPress($event) //Fitler our special characters
+    {
+        if (($event.keyCode >= 65 && $event.keyCode <= 90) || 
+            ($event.keyCode >= 97 && $event.keyCode <= 122) || 
+             $event.keyCode == 46) 
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    onKeyPressPhone($event) //Fitler our special characters
+    {
+        if ($event.keyCode !== 69 && $event.keyCode !== 101) 
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     private presentAlert(text: string) 
     {
         console.log(text);
         let alert = this.alertCtrl.create(
         {
-            title: 'Alert',
-            subTitle: text,
+            title: text,
             buttons: ['Ok']
         });
         alert.present();
