@@ -35,7 +35,7 @@ export class ProfilePage
     {
 
     }
-
+    
     ionViewDidLoad() 
     {
         console.log('ionViewDidLoad ProfilePage');
@@ -62,13 +62,15 @@ export class ProfilePage
 
     updateProfile()
     {
+        let lowerEmail = this.email.toLowerCase();
+
         if (this.initialEmail != this.email)
         {
             let emailUsed = false;
             let self = this;
             const UserParse = Parse.Object.extend('User');
             let emailCheckQuery = new Parse.Query(UserParse);
-            emailCheckQuery.equalTo("email", self.email);
+            emailCheckQuery.equalTo("email", lowerEmail);
             emailCheckQuery.first({
                 success: function (entry) 
                 {
@@ -87,7 +89,7 @@ export class ProfilePage
                 {
                     self.presentAlert("email " + self.email + " is already used");
                 }
-                else
+                else if (self.areInputsValid())
                 {
                     self.performUpdate();
                 }
@@ -95,16 +97,56 @@ export class ProfilePage
         }
         else
         {
-            this.performUpdate();
+            if (this.areInputsValid())
+            {
+                this.performUpdate();
+            }
         }
+    }
+
+    private areInputsValid(): boolean
+    {
+        if (!this.checkAlphabetic(this.firstName))
+        {
+            this.presentAlert("First name must only contain letters");
+            return false;
+        }
+        else if (!this.checkAlphabetic(this.lastName))
+        {
+            this.presentAlert("Last name must only contain letters");
+            return false;
+        }
+        else if (!this.checkNumeric(this.phone))
+        {
+            this.presentAlert("Phone number must only contain numbers");
+            return false;
+        }
+
+        return true;
+    }
+
+    private checkAlphanumeric(text: string)
+    {
+        return !/[^a-zA-Z0-9]/.test(text);
+    }
+
+    private checkAlphabetic(text: string)
+    {
+        return !/[^a-zA-Z]/.test(text);
+    }
+
+    private checkNumeric(text: string)
+    {
+        return !/[^0-9]/.test(text);
     }
 
     performUpdate()
     {
         let self = this;
+        let lowerEmail = this.email.toLowerCase();
         var user = Parse.User.current();
-        user.set("email", this.email);
-        user.set("contactEmail", this.email);
+        user.set("email", lowerEmail);
+        user.set("contactEmail", lowerEmail);
         user.set("firstName", this.firstName);
         user.set("lastName", this.lastName);
         user.set("phone", this.phone);
@@ -113,10 +155,10 @@ export class ProfilePage
             {
                 self.initialFirstName = self.firstName;
                 self.initialLastName = self.lastName;
-                self.initialEmail = self.email;
+                self.initialEmail = lowerEmail;
                 self.initialPhone = self.phone;
                 console.log("profile update success");
-                self.data.updateUser(self.firstName, self.lastName, self.email, self.phone);
+                self.data.updateUser(self.firstName, self.lastName, lowerEmail, self.phone);
                 self.presentAlert("Profile updated");
             },
             error: function(user, error) 
@@ -129,32 +171,6 @@ export class ProfilePage
                 self.presentAlert(error.message);
             }
         });
-    }
-
-    onKeyPress($event) //Fitler our special characters
-    {
-        if (($event.keyCode >= 65 && $event.keyCode <= 90) || 
-            ($event.keyCode >= 97 && $event.keyCode <= 122) || 
-             $event.keyCode == 46) 
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    onKeyPressPhone($event) //Fitler our special characters
-    {
-        if ($event.keyCode !== 69 && $event.keyCode !== 101) 
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
     
     private presentAlert(text: string) 

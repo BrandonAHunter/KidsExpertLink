@@ -34,18 +34,29 @@ export class SigninPage
 
     public doSignin() 
     {
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Signing in...'
+        });
+
+        loader.present();
+
+        let lowerUser = this.username.toLowerCase();
+        
         var self = this;
-        Parse.User.logIn(this.username, this.password, 
+        Parse.User.logIn(lowerUser, this.password, 
         {
             success: function(user) 
             {
                 console.log("logged in " + user.get("username"));
+                loader.dismissAll();
                 self.navCtrl.setRoot(TabsPage);
                 self.data.load();
             },
             error: function(user, error) 
             {
                 console.log("Error: " + error.code + " " + error.message);
+                loader.dismissAll();
                 self.presentAlert(error.message);
             }
         });
