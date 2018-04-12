@@ -378,7 +378,7 @@ export class Data
         for (var i = 0; i < this.UserList.length; i++)
         {
             let user = this.UserList[i];
-            if (user.id)
+            if (user.id == Parse.User.current().id)
             {
                 user.Name = firstName + " " + lastName;
                 user.Email = email;
