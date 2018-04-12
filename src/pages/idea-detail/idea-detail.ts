@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { NavParams, IonicPage, NavController, ViewController } from 'ionic-angular';
 import { Parse } from 'parse';
 import { ViewIdeaPage } from '../view-idea/view-idea';
+import { AlertController } from 'ionic-angular';
+import { Data } from '../../providers/data';
 
 /**
  * Generated class for the IdeaDetailPage page.
@@ -15,68 +17,91 @@ import { ViewIdeaPage } from '../view-idea/view-idea';
   selector: 'page-idea-detail',
   templateUrl: 'idea-detail.html',
 })
-export class IdeaDetailPage {
-  TypeUsing;
-  Title;
-  Description;
-  Name;
-  Email;
-  Phone;
-  constructor(public navCtrl: NavController, public navParams: NavParams, public view: ViewController) {
-  	
-  }
+export class IdeaDetailPage 
+{
+    private TypeUsing;
+    private Title;
+    private Description;
+    private Name;
+    private Email;
+    private Phone;
 
-  ionViewDidLoad() {
-  	
+    private item;
 
-    console.log("Load Detail Page");
-  	var currentUser = Parse.User.current();
-  	this.TypeUsing = currentUser.get('TypeOfUser');
-  	console.log(this.TypeUsing);
+    constructor(public navCtrl: NavController, public navParams: NavParams, 
+                public view: ViewController, private alertCtrl: AlertController,
+                public data: Data) 
+    {
 
-  	if (this.TypeUsing == "Student")
-	  {
-    	let button = document.getElementById("linkButton");
+    }
 
-    	button.style.display = "none";
-	  }
+    ionViewDidLoad() 
+    {
+        let button = document.getElementById("linkButton");
+        button.innerHTML = "Link";
+        button.style.color = "#4286f4";
 
-  	this.Title = this.navParams.get('idea').Title;
-  	this.Description = this.navParams.get('idea').Description;
+        this.item = this.navParams.get('item');
 
-  	var Users = Parse.Object.extend('User');
-  	var userQuery = new Parse.Query(Users);
-  	console.log(this.navParams.get('idea').Creator);
-    userQuery.equalTo("objectId", this.navParams.get('idea').Creator);
+        var currentUser = Parse.User.current();
+        this.TypeUsing = currentUser.get('TypeOfUser');
 
-    var self = this;
+        if (this.TypeUsing == "Student")
+        {
+            let button = document.getElementById("linkButton");
+            button.style.display = "none";
 
-    userQuery.first({
-      success: function(result) {
-      	console.log("result: " + result);
-      	self.Name = result.get("firstName") + " " + result.get("lastName");
-      	self.Email = result.get("contactEmail");
-      	self.Phone = result.get("phone");
-      	console.log(self.Name, self.Email, self.Phone);
-      },
-      error: function(error) {
-      	alert("Error: " + error.code + " " + error.message);
-      }
-    });
-  }
+            let contactSection = document.getElementById("contactSection");
+            contactSection.style.display = "none";
+        }
 
-  Link(){
-  	let newLink = {
-      Expert: Parse.User.current().id,
-      Student: this.navParams.get('idea').Creator,
-      Title: this.Title,
-      Description: this.Description,
-    };
+        this.Title = this.item.Title;
+        this.Description = this.item.Description;
 
-    this.view.dismiss(newLink);
-  }
+        let user = this.data.getUserById(this.item.Creator);
 
-  close() {
-    this.view.dismiss();
-  }
+        this.Name = user.Name;
+        this.Email = user.Email;
+        this.Phone = user.Phone;
+
+        let linkedItems = this.data.LinkedItemsList;
+        for (var i = 0; i < linkedItems.length; i++)
+        {
+            if (linkedItems[i].IdeaId == this.item.IdeaId)
+            {
+                button.style.color = "#f00";
+                button.innerHTML = "Unlink";
+                break;
+            }
+        }
+    }
+
+    Link()
+    {
+        let button = document.getElementById("linkButton");
+
+        if (button.innerHTML == "Link Idea")
+        {
+            button.style.color = "#f00";
+            button.innerHTML = "Unlink";
+        }
+        else
+        {
+            button.style.color = "#4286f4";
+            button.innerHTML = "Link";
+        }
+        
+        this.data.toggleLink(this.item.IdeaId, Parse.User.current().id, this.item.Creator);
+    }
+    
+    private presentAlert(text: string) 
+    {
+        console.log(text);
+        let alert = this.alertCtrl.create(
+        {
+            title: text,
+            buttons: ['Ok']
+        });
+        alert.present();
+    }
 }

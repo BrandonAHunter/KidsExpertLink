@@ -7,12 +7,25 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>viewLinked</ion-title>
+    <ion-title>Linked Ideas</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
-<ion-content padding>
+<ion-content>
+
+    <ion-item class="linked-item" *ngFor="let idea of LinkedIdeasList" (click)="viewIdeaDetail(idea)">
+        <div>
+            <strong>{{idea.Title}}</strong>
+            <br>
+            {{idea.Name}}
+            <br>
+            <br>
+            <p>
+                {{idea.Description}}
+            </p>
+        </div>
+      </ion-item>
 
 </ion-content>

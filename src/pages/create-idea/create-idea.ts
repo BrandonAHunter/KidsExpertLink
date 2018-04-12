@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { Component, ViewChild, ElementRef } from '@angular/core';
+import { IonicPage, NavController, NavParams, Platform } from 'ionic-angular';
+import { AlertController } from 'ionic-angular';
 import { Parse } from 'parse';
 import { ViewIdeaPage } from '../view-idea/view-idea';
 
@@ -17,63 +18,79 @@ import { Data } from '../../providers/data';
   selector: 'page-create-idea',
   templateUrl: 'create-idea.html',
 })
-export class CreateIdeaPage {
-  Title;
-  Description;
-  Ideas;
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+export class CreateIdeaPage 
+{
+    private PageTitle: string = '';
 
-    this.Ideas = Parse.Object.extend('Idea');
-    var ideaQuery = new Parse.Query(this.Ideas);
-    console.log(Parse.User.current().id);
-    ideaQuery.equalTo("CreatedBy", Parse.User.current().id);
-    ideaQuery.find({
-      success: function(results) {
-        // Do something with the returned Parse.Object values
-      console.log(results.length);
-      for (var i = 0; i < results.length; i++) {
-        let newItem = {
-            Title: results[i].get("Title"),
-            Description: results[i].get("Description"),
-            Creator: results[i].get("CreatedBy")
-          };
-        ViewIdeaPage.ideas.push(newItem);
-        console.log(ViewIdeaPage.ideas[i]);
-      }
-      },
-      error: function(error) {
-      alert("Error: " + error.code + " " + error.message);
-      }
-    });
+    private Title: string = '';
+    private Description: string = '';
+    private ideaId: string;
+    private creatorId: string;
 
+    private Ideas;
+    private isEditing = false;
+
+    constructor(public navCtrl: NavController, public navParams: NavParams,
+                private alertCtrl: AlertController, public data: Data,
+                private platform: Platform) 
+    {
+
+    }
+
+    ionViewDidLoad() 
+    {
+        console.log('ionViewDidLoad CreateIdeaPage');
+
+        let idea = this.navParams.get('item');
+        if (idea != undefined)
+        {
+            this.PageTitle = "Edit Idea";
+            this.isEditing = true;
+            this.ideaId = idea.IdeaId;
+            this.creatorId = idea.Creator;
+            this.Title = idea.Title;
+            this.Description = idea.Description;
+        }
+        else
+        {
+            this.PageTitle = "Create Idea";
+        }
+        this.resize();
+    }
     
-  }
+    saveIdea()
+    {
+        if (this.isEditing)
+        {
+            this.data.editIdea(this.ideaId, this.creatorId, this.Title, this.Description);
+            this.navCtrl.pop();
+        }
+        else
+        {
+            this.data.addIdea(Parse.User.current().id, this.Title, this.Description);
+            this.Title = '';
+            this.Description = '';
+            this.presentAlert("Idea Created!");
+        }
+    }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad CreateIdeaPage');
-  }
-  
-  CreateDescription(){
-  	var Idea = new this.Ideas();
-  	
-  	Idea.set('CreatedBy', Parse.User.current().id);
-  	Idea.set('Title', this.Title);
-  	Idea.set('Description', this.Description);
-    var self = this;
-  	Idea.save(null, {
-  		success: function(menu) {
-        let newItem = {
-            Title: self.Title,
-            Description: self.Description,
-            Creator: Parse.User.current().id
-          };
-        ViewIdeaPage.ideas.push(newItem);
-        self.Title = "";
-        self.Description = "";
-  		},
-  		error: function(menu, error) {
-   			alert('Failed to create new idea, with error code: ' + error.message);
-  		}
-	});
-  }
+    @ViewChild('descriptionInput') myInput: ElementRef;
+    resize() 
+    {
+        var element = this.myInput['_elementRef'].nativeElement.getElementsByClassName("text-input")[0];
+        var scrollHeight = element.scrollHeight;
+        element.style.height = scrollHeight + 'px';
+        this.myInput['_elementRef'].nativeElement.style.height = (scrollHeight + 16) + 'px';
+    }
+
+    private presentAlert(text: string) 
+    {
+        console.log(text);
+        let alert = this.alertCtrl.create(
+        {
+            title: text,
+            buttons: ['Ok']
+        });
+        alert.present();
+    }
 }

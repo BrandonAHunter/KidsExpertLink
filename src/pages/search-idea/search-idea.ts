@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Pipe, PipeTransform } from '@angular/core';
 import { IonicPage, ModalController, NavController, NavParams } from 'ionic-angular';
 import { IdeaDetailPage } from '../idea-detail/idea-detail';
+import { Data } from '../../providers/data';
 import { Parse } from 'parse';
 /**
  * Generated class for the SearchIdeaPage page.
@@ -14,54 +15,64 @@ import { Parse } from 'parse';
   selector: 'page-search-idea',
   templateUrl: 'search-idea.html',
 })
-export class SearchIdeaPage {
-  Title;
-  Description;
-  Ideas;
-  IdeaList = [];
-  constructor(public navCtrl: NavController, public navParams: NavParams, public modalCtrl: ModalController) {
-  	this.Ideas = Parse.Object.extend('Idea');
-    var ideaQuery = new Parse.Query(this.Ideas);
+export class SearchIdeaPage 
+{
+    private searchInput: string = '';
+    private shouldShowCancel: boolean = true;
 
-    var self = this;
+    constructor(public navCtrl: NavController, public navParams: NavParams, 
+                public modalCtrl: ModalController, public data: Data) 
+    {
 
-    ideaQuery.find({
-      success: function(results) {
-        // Do something with the returned Parse.Object values
-      console.log(results.length);
-      for (var i = 0; i < results.length; i++) {
-        let newItem = {
-            Title: results[i].get("Title"),
-            Description: results[i].get("Description"),
-            Creator: results[i].get("CreatedBy")
-          };
-        self.IdeaList.push(newItem);
-        console.log(self.IdeaList[i]);
-      }
-      },
-      error: function(error) {
-      	alert("Error: " + error.code + " " + error.message);
-      }
-    });
-  }
+    }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad SearchIdeaPage');
-  }
+    ionViewDidLoad() 
+    {
+        console.log('ionViewDidLoad SearchIdeaPage');
+    }
 
-  viewIdeaDetail(idea) {
+    viewIdeaDetail(idea) 
+    {
+        if (idea != undefined)
+        {
+            this.navCtrl.push(IdeaDetailPage, 
+            {
+                item: idea
+            });
+        }
+    }
 
-    let addModal = this.modalCtrl.create(IdeaDetailPage, {idea: idea});
+    onSearchInput($event)
+    {
 
-    addModal.onDidDismiss((Linked) => {
+    }
 
-      if (Linked) {
-        //TODO: Add Linked Info To Linked database table
-      }
+    onSearchCancel($event)
+    {
+        this.searchInput = '';
+    }
+    
+    get IdeasList(): any[]
+    {
+        if (this.searchInput.length > 0)
+        {
+            let itemList = this.data.IdeaItemsList;
+            let filteredList = [];
+            for (var i = 0; i < itemList.length; i++)
+            {
+                let title: string = itemList[i].Title.toLowerCase().replace(" ", "");
+                let searchLower: string = this.searchInput.toLowerCase().replace(" ", "");
 
-    });
-
-    addModal.present();
-
-  }
+                if (title.includes(searchLower) || searchLower.includes(title))
+                {
+                    filteredList.push(itemList[i]);
+                }
+            }
+            return filteredList;
+        }
+        else
+        {
+            return this.data.IdeaItemsList;
+        }
+    }
 }

@@ -2,7 +2,7 @@
 
   <p class="logo">
     <!-- <img src="http://placehold.it/300x200"/> -->
-    <img src="../../assets/imgs/logohead.png" />
+    <img src="../../assets/imgs/KidsExpertLink.png" />
   </p>
 
   <form (submit)="doSignin()">
@@ -10,15 +10,19 @@
 
       <ion-item>
         <ion-label stacked>Username</ion-label>
-        <ion-input type="text" [(ngModel)]="username" name="username"></ion-input>
+        <ion-input type="text" [(ngModel)]="username" name="name"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label stacked>Password</ion-label>
-        <ion-input type="password" [(ngModel)]="password" name="password"></ion-input>
+        <ion-input type="password" [(ngModel)]="password" name="pass"></ion-input>
       </ion-item>
       
       <div padding>
-        <button ion-button color="accent" block>Login</button>
+        <button ion-button color="accent" 
+          block [disabled]="username.length == '0' || password.length == '0'">
+          Login
+        </button>
+        
         <p style="text-align: center">Don't you have an acccount? <a [navPush]="registerPage">Signup</a></p>
       </div>
 
