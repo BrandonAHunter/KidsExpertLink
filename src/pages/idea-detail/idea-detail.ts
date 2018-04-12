@@ -80,7 +80,7 @@ export class IdeaDetailPage
     {
         let button = document.getElementById("linkButton");
 
-        if (button.innerHTML == "Link Idea")
+        if (button.innerHTML == "Link")
         {
             button.style.color = "#f00";
             button.innerHTML = "Unlink";
