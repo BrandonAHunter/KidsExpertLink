@@ -48,10 +48,10 @@ export class Data
     {
         this.loggedIn = false;
 
-        this.UserList = [];
-        this.IdeaList = [];
-        this.LinkIdeaIdList = [];
-        this.AllLinks = [];
+        let newUserList = [];
+        let newIdeaList = [];
+        let newLinkIdeaIdList = [];
+        let newAllLinks = [];
 
         this.currentUserId = Parse.User.current().id;
 
@@ -73,7 +73,7 @@ export class Data
                         Email: users[i].get("contactEmail"),
                         Phone: users[i].get("phone")
                     };
-                    self.UserList.push(User);
+                    newUserList.push(User);
 
                     if (users[i].id == self.currentUserId)
                     {
@@ -97,7 +97,7 @@ export class Data
                     {
                         if (self.currentUserId == links[i].get("expert"))
                         {
-                            self.LinkIdeaIdList.push(links[i].get("ideaId"));
+                            newLinkIdeaIdList.push(links[i].get("ideaId"));
                         }
 
                         let LinkItem = {
@@ -107,7 +107,7 @@ export class Data
                             Request: links[i].get("Request"),
                         };
 
-                        self.AllLinks.push(LinkItem);
+                        newAllLinks.push(LinkItem);
                     }
                 },
                 error: function(error) { }
@@ -127,9 +127,9 @@ export class Data
                                 let description = results[i].get("Description");
                                 let creator = results[i].get("CreatedBy");
 
-                                for (var j = 0; j < self.UserList.length; j++)
+                                for (var j = 0; j < newUserList.length; j++)
                                 {
-                                    let user = self.UserList[j];
+                                    let user = newUserList[j];
                                     if (user != undefined && user.id == creator)
                                     {
                                         let newItem = {
@@ -144,19 +144,19 @@ export class Data
                                         
                                         if (self.typeOfUser == "Student" && creator == self.currentUserId)
                                         {
-                                            self.LinkIdeaIdList.push(id);
+                                            newLinkIdeaIdList.push(id);
                                         }
                                         
-                                        self.IdeaList.push(newItem);
+                                        newIdeaList.push(newItem);
                                         break;
                                     }
                                 }
                             }
                         }
                         
-                        if (self.IdeaList.length > 1)
+                        if (newIdeaList.length > 1)
                         {
-                            self.IdeaList.sort(function(itemA, itemB)
+                            newIdeaList.sort(function(itemA, itemB)
                             {
                                 if(itemA.Title < itemB.Title) 
                                 {
@@ -169,6 +169,11 @@ export class Data
                                 return 0;
                             });
                         }
+
+                        self.UserList = newUserList;
+                        self.IdeaList = newIdeaList;
+                        self.LinkIdeaIdList = newLinkIdeaIdList;
+                        self.AllLinks = newAllLinks;
                     }, error: function(error) 
                     {
                         alert("Error: " + error.code + " " + error.message);
