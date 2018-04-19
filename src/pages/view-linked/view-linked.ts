@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, LoadingController, App } from 'ionic-angular';
+import { SigninPage } from '../signin/signin';
 import { IdeaDetailPage } from '../idea-detail/idea-detail';
 import { Parse } from 'parse';
 import { Data } from '../../providers/data';
@@ -19,9 +20,10 @@ import { Data } from '../../providers/data';
 export class ViewLinkedPage 
 {
     constructor(public navCtrl: NavController, public navParams: NavParams,
-                public data: Data) 
+                public data: Data, private loadCtrl: LoadingController,
+                private _app: App)
     {
-        
+
     }
 
     ionViewDidLoad() 
@@ -43,5 +45,24 @@ export class ViewLinkedPage
     get LinkedIdeasList(): any[]
     {
         return this.data.LinkedItemsList;
+    }
+
+    private Logout(){
+
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Logging out...'
+        });
+
+        loader.present();
+
+        var self = this;
+
+        console.log("Logout");
+        Parse.User.logOut().then(() => {
+              loader.dismissAll();
+              self._app.getRootNav().setRoot(SigninPage);
+              self.data.load();
+        });
     }
 }

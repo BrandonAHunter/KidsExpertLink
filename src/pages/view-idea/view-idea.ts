@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
-import { IonicPage, ModalController, NavController } from 'ionic-angular';
+import { IonicPage, ModalController, NavController, LoadingController, App } from 'ionic-angular';
 import { AlertController } from 'ionic-angular';
 import { IdeaDetailPage } from '../idea-detail/idea-detail';
 import { CreateIdeaPage } from '../create-idea/create-idea';
+import { SigninPage } from '../signin/signin';
+import { TabsPage } from '../tabs/tabs';
 import { Parse } from 'parse';
 
 
@@ -25,7 +27,8 @@ export class ViewIdeaPage
     private ideaToDelete;
 
     constructor(public navCtrl: NavController, public modalCtrl: ModalController, 
-                private alertCtrl: AlertController, public data: Data) 
+                private alertCtrl: AlertController, public data: Data, 
+                private loadCtrl: LoadingController, private _app: App) 
     {
 
     }
@@ -109,5 +112,24 @@ export class ViewIdeaPage
         });
 
         alert.present();
+    }
+
+    private Logout(){
+
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Logging out...'
+        });
+
+        loader.present();
+
+        var self = this;
+
+        console.log("Logout");
+        Parse.User.logOut().then(() => {
+              loader.dismissAll();
+              self._app.getRootNav().setRoot(SigninPage);
+              self.data.load();
+        });
     }
 }

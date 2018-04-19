@@ -20,6 +20,9 @@ export class Data
 
     private currentUserId: string = "";
     private typeOfUser: string = "";
+
+    private databaseRefreshTime = 15000; //15 seconds
+    private loggedIn = false;
 	
     constructor(public Storage: Storage){
  
@@ -29,13 +32,26 @@ export class Data
         console.log('Initiated Parse');
 
         //Do not load storage until the user logs in
+
+        let self = this;
+        setInterval(function()
+        {
+            if (self.loggedIn)
+            {
+                console.log("updating from database");
+                self.load();
+            }
+        }, this.databaseRefreshTime);
     }
     
     public load()
     {
+        this.loggedIn = false;
+
         this.UserList = [];
         this.IdeaList = [];
         this.LinkIdeaIdList = [];
+        this.AllLinks = [];
 
         this.currentUserId = Parse.User.current().id;
 
@@ -62,6 +78,7 @@ export class Data
                     if (users[i].id == self.currentUserId)
                     {
                         self.typeOfUser = users[i].get("TypeOfUser");
+                        self.loggedIn = true;
                     }
                 }
             },
