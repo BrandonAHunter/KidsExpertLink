@@ -1,5 +1,6 @@
 import { Component, Pipe, PipeTransform } from '@angular/core';
-import { IonicPage, ModalController, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, ModalController, NavController, NavParams, LoadingController, App } from 'ionic-angular';
+import { SigninPage } from '../signin/signin';
 import { IdeaDetailPage } from '../idea-detail/idea-detail';
 import { Data } from '../../providers/data';
 import { Parse } from 'parse';
@@ -21,7 +22,8 @@ export class SearchIdeaPage
     private shouldShowCancel: boolean = true;
 
     constructor(public navCtrl: NavController, public navParams: NavParams, 
-                public modalCtrl: ModalController, public data: Data) 
+                public modalCtrl: ModalController, public data: Data,
+                private loadCtrl: LoadingController, private _app: App) 
     {
 
     }
@@ -46,7 +48,7 @@ export class SearchIdeaPage
     {
 
     }
-
+    
     onSearchCancel($event)
     {
         this.searchInput = '';
@@ -74,5 +76,24 @@ export class SearchIdeaPage
         {
             return this.data.IdeaItemsList;
         }
+    }
+
+    private Logout(){
+
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Logging out...'
+        });
+
+        loader.present();
+
+        var self = this;
+
+        console.log("Logout");
+        Parse.User.logOut().then(() => {
+              loader.dismissAll();
+              self._app.getRootNav().setRoot(SigninPage);
+              self.data.load();
+        });
     }
 }

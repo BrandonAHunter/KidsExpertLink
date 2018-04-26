@@ -28,6 +28,14 @@ export class IdeaDetailPage
 
     private item;
 
+    private request;
+
+    button;
+    pendingContact;
+    requestContact;
+    contactSection;
+    grantContact;
+
     constructor(public navCtrl: NavController, public navParams: NavParams, 
                 public view: ViewController, private alertCtrl: AlertController,
                 public data: Data) 
@@ -37,22 +45,52 @@ export class IdeaDetailPage
 
     ionViewDidLoad() 
     {
-        let button = document.getElementById("linkButton");
-        button.innerHTML = "Link";
-        button.style.color = "#4286f4";
+        this.button = document.getElementById("linkButton");
+        this.pendingContact = document.getElementById("pendingContact");
+        this.requestContact = document.getElementById("requestContact");
+        this.contactSection = document.getElementById("contactSection");
+        this.grantContact = document.getElementById("grantContact");
+
+        this.button.innerHTML = "Link";
+        this.button.style.color = "#4286f4";
 
         this.item = this.navParams.get('item');
 
         var currentUser = Parse.User.current();
         this.TypeUsing = currentUser.get('TypeOfUser');
+        console.log(this.TypeUsing);
+
+
+
+        this.button.style.display = "none";
+        this.requestContact.style.display = "none";
+        this.pendingContact.style.display = "none";
+        this.contactSection.style.display = "none";
+        this.grantContact.style.display = "none";
+
+
 
         if (this.TypeUsing == "Student")
         {
-            let button = document.getElementById("linkButton");
-            button.style.display = "none";
+            this.grantContact.style.display = "block";
+        }
 
-            let contactSection = document.getElementById("contactSection");
-            contactSection.style.display = "none";
+        if (this.TypeUsing == "Professional")
+        {
+            this.button.style.display = "block";
+
+            this.request = this.data.getRequest(this.item.IdeaId, currentUser.id);
+            console.log(this.request);
+
+            if(this.request == "Empty"){
+                this.requestContact.style.display = "block";
+            }
+            else if(this.request == "Pending"){
+                this.pendingContact.style.display = "block";
+            }
+            else if(this.request == "Granted"){
+                this.contactSection.style.display = "block";
+            }
         }
 
         this.Title = this.item.Title;
@@ -69,8 +107,8 @@ export class IdeaDetailPage
         {
             if (linkedItems[i].IdeaId == this.item.IdeaId)
             {
-                button.style.color = "#f00";
-                button.innerHTML = "Unlink";
+                this.button.style.color = "#f00";
+                this.button.innerHTML = "Unlink";
                 break;
             }
         }
@@ -78,17 +116,19 @@ export class IdeaDetailPage
 
     Link()
     {
-        let button = document.getElementById("linkButton");
-
-        if (button.innerHTML == "Link")
+        if (this.button.innerHTML == "Link")
         {
-            button.style.color = "#f00";
-            button.innerHTML = "Unlink";
+            this.button.style.color = "#f00";
+            this.button.innerHTML = "Unlink";
+            this.requestContact.style.display = "block";
         }
         else
         {
-            button.style.color = "#4286f4";
-            button.innerHTML = "Link";
+            this.button.style.color = "#4286f4";
+            this.button.innerHTML = "Link";
+            this.requestContact.style.display = "none";
+            this.pendingContact.style.display = "none";
+            this.contactSection.style.display = "none";
         }
         
         this.data.toggleLink(this.item.IdeaId, Parse.User.current().id, this.item.Creator);
@@ -103,5 +143,23 @@ export class IdeaDetailPage
             buttons: ['Ok']
         });
         alert.present();
+    }
+
+    RequestContact(){
+        this.data.SendRequest(this.item.IdeaId, Parse.User.current().id);
+        this.requestContact.style.display = "none";
+
+        this.pendingContact.style.display = "block";
+    }
+
+    GetLinks(){
+        if(this.TypeUsing == "Student")
+        {
+            return this.data.GetLinks(this.item.IdeaId, Parse.User.current().id);
+        }
+    }
+
+    GrantContact(Link){
+        this.data.GrantRequest(Link);
     }
 }

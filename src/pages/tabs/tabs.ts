@@ -35,10 +35,10 @@ export class TabsPage
         } 
         else 
         {
-          this.title1 = 'Create Idea'
-          this.tab1Root = CreateIdeaPage;
-          this.title2 = 'My Ideas'
-          this.tab2Root = ViewIdeaPage;
+          this.title1 = 'My Idea'
+          this.tab1Root = ViewIdeaPage;
+          this.title2 = 'Create Ideas'
+          this.tab2Root = CreateIdeaPage;
         }
     }
 }

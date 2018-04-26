@@ -32,6 +32,18 @@
   	</div>
     <br>
     <br>
+    <div id="requestContact" class="contact-section">
+        <button ion-button (click)="RequestContact()">Request Contact</button>
+    </div>
+    <div id="pendingContact" class="contact-section">
+        <strong>Contact request is pending</strong>
+    </div>
+    <div id="grantContact" class="contact-section">
+        <ion-item *ngFor="let link of GetLinks()">
+            <strong>{{link.Name}}</strong>
+            <button ion-button (click)="GrantContact(link)">Accept contact request</button>
+        </ion-item>
+    </div>
     <div id="contactSection" class="contact-section">
         <strong>Creator Contact Info</strong>
         <br>
@@ -42,5 +54,6 @@
         <br>
         {{Phone}}
     </div>
+    
 
 </ion-content>

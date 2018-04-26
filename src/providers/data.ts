@@ -15,10 +15,14 @@ export class Data
     private UserList = [];
     private IdeaList = [];
 
+    private AllLinks = [];
     private LinkIdeaIdList = [];
 
     private currentUserId: string = "";
     private typeOfUser: string = "";
+
+    private databaseRefreshTime = 15000; //15 seconds
+    private loggedIn = false;
 	
     constructor(public Storage: Storage){
  
@@ -28,13 +32,26 @@ export class Data
         console.log('Initiated Parse');
 
         //Do not load storage until the user logs in
+
+        let self = this;
+        setInterval(function()
+        {
+            if (self.loggedIn)
+            {
+                console.log("updating from database");
+                self.load();
+            }
+        }, this.databaseRefreshTime);
     }
     
     public load()
     {
-        this.UserList = [];
-        this.IdeaList = [];
-        this.LinkIdeaIdList = [];
+        this.loggedIn = false;
+
+        let newUserList = [];
+        let newIdeaList = [];
+        let newLinkIdeaIdList = [];
+        let newAllLinks = [];
 
         this.currentUserId = Parse.User.current().id;
 
@@ -56,11 +73,12 @@ export class Data
                         Email: users[i].get("contactEmail"),
                         Phone: users[i].get("phone")
                     };
-                    self.UserList.push(User);
+                    newUserList.push(User);
 
                     if (users[i].id == self.currentUserId)
                     {
                         self.typeOfUser = users[i].get("TypeOfUser");
+                        self.loggedIn = true;
                     }
                 }
             },
@@ -79,8 +97,17 @@ export class Data
                     {
                         if (self.currentUserId == links[i].get("expert"))
                         {
-                            self.LinkIdeaIdList.push(links[i].get("ideaId"));
+                            newLinkIdeaIdList.push(links[i].get("ideaId"));
                         }
+
+                        let LinkItem = {
+                            Expert: links[i].get("expert"),
+                            Student: links[i].get("student"),
+                            IdeaId: links[i].get("ideaId"),
+                            Request: links[i].get("Request"),
+                        };
+
+                        newAllLinks.push(LinkItem);
                     }
                 },
                 error: function(error) { }
@@ -100,9 +127,9 @@ export class Data
                                 let description = results[i].get("Description");
                                 let creator = results[i].get("CreatedBy");
 
-                                for (var j = 0; j < self.UserList.length; j++)
+                                for (var j = 0; j < newUserList.length; j++)
                                 {
-                                    let user = self.UserList[j];
+                                    let user = newUserList[j];
                                     if (user != undefined && user.id == creator)
                                     {
                                         let newItem = {
@@ -117,19 +144,19 @@ export class Data
                                         
                                         if (self.typeOfUser == "Student" && creator == self.currentUserId)
                                         {
-                                            self.LinkIdeaIdList.push(id);
+                                            newLinkIdeaIdList.push(id);
                                         }
                                         
-                                        self.IdeaList.push(newItem);
+                                        newIdeaList.push(newItem);
                                         break;
                                     }
                                 }
                             }
                         }
                         
-                        if (self.IdeaList.length > 1)
+                        if (newIdeaList.length > 1)
                         {
-                            self.IdeaList.sort(function(itemA, itemB)
+                            newIdeaList.sort(function(itemA, itemB)
                             {
                                 if(itemA.Title < itemB.Title) 
                                 {
@@ -142,6 +169,11 @@ export class Data
                                 return 0;
                             });
                         }
+
+                        self.UserList = newUserList;
+                        self.IdeaList = newIdeaList;
+                        self.LinkIdeaIdList = newLinkIdeaIdList;
+                        self.AllLinks = newAllLinks;
                     }, error: function(error) 
                     {
                         alert("Error: " + error.code + " " + error.message);
@@ -209,6 +241,17 @@ export class Data
                         success: function(response) 
                         {
                             self.LinkIdeaIdList.splice(self.LinkIdeaIdList.indexOf(ideaId), 1);
+
+                            for (var i = 0; i < this.AllLinks.length; i++)
+                            {
+                                let LinkItem = this.AllLinks[i];
+                                if (LinkItem.IdeaId == ideaId)
+                                {
+                                    this.AllLinks.splice(i, 1);
+                                    break;
+                                }
+                            }
+
                             console.log('item erased successfully');
                         },
                         error: function(response, error) {
@@ -229,10 +272,20 @@ export class Data
                 newLinkItem.set("expert", expertId);
                 newLinkItem.set("student", studentId);
                 newLinkItem.set("ideaId", ideaId);
+                newLinkItem.set("Request", "Empty");
                 newLinkItem.save(null, {
                     success: function (entry) 
                     {
                         self.LinkIdeaIdList.push(ideaId);
+
+                        let LinkItem = {
+                            Expert: expertId,
+                            Student: studentId,
+                            IdeaId: ideaId,
+                            Request: "Empty",
+                        };
+
+                        self.AllLinks.push(LinkItem);
                     },
                     error: function (response, error) 
                     {
@@ -399,5 +452,105 @@ export class Data
                 break;
             }
         }
+    }
+
+    public getRequest(ideaId, expertId)
+    {
+        for(var i = 0; i < this.AllLinks.length; i++){
+            if(this.AllLinks[i].IdeaId == ideaId && this.AllLinks[i].Expert == expertId){
+                return this.AllLinks[i].Request;
+            }
+        }
+    }
+
+    public SendRequest(ideaId, expertId)
+    {
+        for(var i = 0; i < this.AllLinks.length; i++){
+            if(this.AllLinks[i].IdeaId == ideaId && this.AllLinks[i].Expert == expertId){
+                this.AllLinks[i].Request = "Pending";
+            }
+        }
+        var LinkItem = Parse.Object.extend('Linked');
+        var linkQuery = new Parse.Query(LinkItem);
+        linkQuery.equalTo("ideaId", ideaId);
+        linkQuery.equalTo("expert", expertId);
+        linkQuery.first({
+            success: function (link) 
+            {
+                if (link) 
+                {
+                    link.set("Request", "Pending");
+                    link.save(null, {
+                        success: function (item) 
+                        {
+                            console.log('link updated successfully');
+                        },
+                        error: function (response, error) 
+                        {
+                            console.log('Error: ' + error.message);
+                        }
+                    });
+                }
+            },
+            error: function (error) 
+            {
+                console.log("Error: " + error.code + " " + error.message);
+            }
+        });
+    }
+
+    public GetLinks(ideaId, userId)
+    {
+        var links = [];
+        for(var i = 0; i < this.AllLinks.length; i++){
+            if(this.AllLinks[i].Student == userId && this.AllLinks[i].Request == "Pending"
+                && this.AllLinks[i].IdeaId == ideaId){
+                let LinkItem = {
+                    Expert: this.AllLinks[i].Expert,
+                    Student: this.AllLinks[i].Student,
+                    IdeaId: this.AllLinks[i].IdeaId,
+                    Request: this.AllLinks[i].Request,
+                    Name: this.getUserById(this.AllLinks[i].Expert).Name
+                };
+                links.push(LinkItem);
+            }
+        }
+        return links;
+    }
+
+    public GrantRequest(Link)
+    {
+        for(var i = 0; i < this.AllLinks.length; i++){
+            if(this.AllLinks[i].IdeaId == Link.IdeaId && this.AllLinks[i].Expert == Link.Expert){
+                this.AllLinks[i].Request = "Granted";
+            }
+        }
+        var LinkItem = Parse.Object.extend('Linked');
+        var linkQuery = new Parse.Query(LinkItem);
+        linkQuery.equalTo("ideaId", Link.IdeaId);
+        linkQuery.equalTo("expert", Link.Expert);
+        linkQuery.first({
+            success: function (link) 
+            {
+                if (link) 
+                {
+                    link.set("Request", "Granted");
+                    link.save(null, {
+                        success: function (item) 
+                        {
+                            console.log('link updated successfully');
+                        },
+                        error: function (response, error) 
+                        {
+                            console.log('Error: ' + error.message);
+                        }
+                    });
+                }
+            },
+            error: function (error) 
+            {
+                console.log("Error: " + error.code + " " + error.message);
+            }
+        });
     }
 }

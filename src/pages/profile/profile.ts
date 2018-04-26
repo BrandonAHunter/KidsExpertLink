@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, LoadingController, App } from 'ionic-angular';
+import { SigninPage } from '../signin/signin';
 import { AlertController } from 'ionic-angular';
 import { Data } from '../../providers/data';
 import { Parse } from 'parse';
@@ -31,7 +32,8 @@ export class ProfilePage
     private initialPhone: string = '';
 
     constructor(public navCtrl: NavController, public navParams: NavParams,
-                public data: Data, private alertCtrl: AlertController)
+                public data: Data, private alertCtrl: AlertController,
+                private loadCtrl: LoadingController, private _app: App)
     {
 
     }
@@ -182,5 +184,24 @@ export class ProfilePage
             buttons: ['Ok']
         });
         alert.present();
+    }
+
+    private Logout(){
+
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Logging out...'
+        });
+
+        loader.present();
+
+        var self = this;
+
+        console.log("Logout");
+        Parse.User.logOut().then(() => {
+              loader.dismissAll();
+              self._app.getRootNav().setRoot(SigninPage);
+              self.data.load();
+        });
     }
 }

@@ -1,5 +1,6 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IonicPage, NavController, NavParams, Platform } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, Platform, LoadingController, App } from 'ionic-angular';
+import { SigninPage } from '../signin/signin';
 import { AlertController } from 'ionic-angular';
 import { Parse } from 'parse';
 import { ViewIdeaPage } from '../view-idea/view-idea';
@@ -32,7 +33,8 @@ export class CreateIdeaPage
 
     constructor(public navCtrl: NavController, public navParams: NavParams,
                 private alertCtrl: AlertController, public data: Data,
-                private platform: Platform) 
+                private platform: Platform, private loadCtrl: LoadingController,
+                private _app: App) 
     {
 
     }
@@ -92,5 +94,24 @@ export class CreateIdeaPage
             buttons: ['Ok']
         });
         alert.present();
+    }
+
+    private Logout(){
+
+        let loader = this.loadCtrl.create(
+        {
+            content: 'Logging out...'
+        });
+
+        loader.present();
+
+        var self = this;
+
+        console.log("Logout");
+        Parse.User.logOut().then(() => {
+              loader.dismissAll();
+              self._app.getRootNav().setRoot(SigninPage);
+              self.data.load();
+        });
     }
 }
