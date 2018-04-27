@@ -199,6 +199,7 @@ export class ProfilePage
 
         console.log("Logout");
         Parse.User.logOut().then(() => {
+              self.data.clearLoginData();
               loader.dismissAll();
               self._app.getRootNav().setRoot(SigninPage);
               self.data.load();

@@ -9,10 +9,6 @@
 
     <ion-title>{{Title}}</ion-title>
     
-    <!--<ion-buttons start>
-      <button ion-button (click)="close()"><ion-icon name="arrow-back"></ion-icon></button>
-    </ion-buttons>-->
-    
     <ion-buttons end>
       	<button ion-button (click)="Link()" id="linkButton">Link Idea</button>
     </ion-buttons>
@@ -20,30 +16,33 @@
   </ion-navbar>
 </ion-header>
 
-
 <ion-content padding>
 
     <h4>
-      {{Title}}
+        {{Title}}
     </h4>
     <hr>
-  	<div>
-	  {{Description}}
-  	</div>
+    <div>
+        {{Description}}
+    </div>
     <br>
     <br>
+
     <div id="requestContact" class="contact-section">
         <button ion-button (click)="RequestContact()">Request Contact</button>
     </div>
+
     <div id="pendingContact" class="contact-section">
         <strong>Contact request is pending</strong>
     </div>
+
     <div id="grantContact" class="contact-section">
         <ion-item *ngFor="let link of GetLinks()">
             <strong>{{link.Name}}</strong>
-            <button ion-button (click)="GrantContact(link)">Accept contact request</button>
+            <button ion-button (click)="GrantContact(link)">Accept Contact Request</button>
         </ion-item>
     </div>
+    
     <div id="contactSection" class="contact-section">
         <strong>Creator Contact Info</strong>
         <br>
@@ -54,6 +53,5 @@
         <br>
         {{Phone}}
     </div>
-    
 
 </ion-content>

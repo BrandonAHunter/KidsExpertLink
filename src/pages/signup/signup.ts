@@ -37,7 +37,7 @@ export class SignupPage
     {
         console.log('Initiate Signup');
     }
-
+    
     public doRegister() 
     {
         this.userNameUsed = false;
