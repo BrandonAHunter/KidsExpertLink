@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { MyApp } from './app.component';
 import { IonicStorageModule } from '@ionic/storage';
-
+import { Facebook } from '@ionic-native/facebook';
 
 import { CreateIdeaPage } from '../pages/create-idea/create-idea';
 import { IdeaDetailPage } from '../pages/idea-detail/idea-detail';
@@ -54,6 +54,7 @@ import { Data } from '../providers/data';
   providers: [
     StatusBar,
     SplashScreen,
+    Facebook,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     Data
   ]})

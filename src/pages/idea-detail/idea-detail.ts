@@ -60,15 +60,11 @@ export class IdeaDetailPage
         this.TypeUsing = currentUser.get('TypeOfUser');
         console.log(this.TypeUsing);
 
-
-
         this.button.style.display = "none";
         this.requestContact.style.display = "none";
         this.pendingContact.style.display = "none";
         this.contactSection.style.display = "none";
         this.grantContact.style.display = "none";
-
-
 
         if (this.TypeUsing == "Student")
         {
@@ -134,6 +130,27 @@ export class IdeaDetailPage
         this.data.toggleLink(this.item.IdeaId, Parse.User.current().id, this.item.Creator);
     }
     
+    RequestContact()
+    {
+        this.data.SendRequest(this.item.IdeaId, Parse.User.current().id);
+        this.requestContact.style.display = "none";
+
+        this.pendingContact.style.display = "block";
+    }
+
+    GetLinks()
+    {
+        if(this.TypeUsing == "Student")
+        {
+            return this.data.GetLinks(this.item.IdeaId, Parse.User.current().id);
+        }
+    }
+
+    GrantContact(Link)
+    {
+        this.data.GrantRequest(Link);
+    }
+
     private presentAlert(text: string) 
     {
         console.log(text);
@@ -143,23 +160,5 @@ export class IdeaDetailPage
             buttons: ['Ok']
         });
         alert.present();
-    }
-
-    RequestContact(){
-        this.data.SendRequest(this.item.IdeaId, Parse.User.current().id);
-        this.requestContact.style.display = "none";
-
-        this.pendingContact.style.display = "block";
-    }
-
-    GetLinks(){
-        if(this.TypeUsing == "Student")
-        {
-            return this.data.GetLinks(this.item.IdeaId, Parse.User.current().id);
-        }
-    }
-
-    GrantContact(Link){
-        this.data.GrantRequest(Link);
     }
 }

@@ -2,7 +2,6 @@ import { Storage } from '@ionic/storage';
 import { Injectable } from '@angular/core';
 import { Parse } from 'parse';
 
- 
 @Injectable()
 export class Data 
 {
@@ -24,8 +23,8 @@ export class Data
     private databaseRefreshTime = 15000; //15 seconds
     private loggedIn = false;
 	
-    constructor(public Storage: Storage){
- 
+    constructor(public storage: Storage)
+    {
         Parse.initialize(this.parseAppId, this.parseJSKey);
         Parse.serverURL = this.parseServerUrl;
 
@@ -520,6 +519,7 @@ export class Data
 
     public GrantRequest(Link)
     {
+        let self = this;
         for(var i = 0; i < this.AllLinks.length; i++){
             if(this.AllLinks[i].IdeaId == Link.IdeaId && this.AllLinks[i].Expert == Link.Expert){
                 this.AllLinks[i].Request = "Granted";
@@ -552,5 +552,10 @@ export class Data
                 console.log("Error: " + error.code + " " + error.message);
             }
         });
+    }
+    
+    public clearLoginData()
+    {
+        this.storage.set("autoLogin", false);
     }
 }
